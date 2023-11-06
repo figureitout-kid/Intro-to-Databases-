@@ -36,11 +36,38 @@ public class Tutorial {
     private void run() {
 
         // Step One: Create a new customer
+        Customer newCustomer = new Customer();
+        newCustomer.setFirstName("Lou");
+        newCustomer.setLastName("Malnati");
+        newCustomer.setStreetAddress("6649 North Lincoln Avenue");
+        newCustomer.setCity("Lincolnwood");
+        newCustomer.setPhoneNumber("8476730800");
+        newCustomer.setEmailAddress("lou@loutmalnatis.com");
+        newCustomer.setEmailOffers(true);
+
+        newCustomer = customerDao.createCustomer(newCustomer);
+        System.out.println("New customer created with ID " + newCustomer.getCustomerId());
 
         // Step Two: Update an existing customer
+        newCustomer.setFirstName("Louis");
+        customerDao.updateCustomer(newCustomer);
+
+        Customer updatedCustomer = customerDao.getCustomerById(newCustomer.getCustomerId());
+        System.out.println("In the datastore, updated customer's first name is now " + updatedCustomer.getFirstName());
 
         // Step Three: Delete a customer
-
+        int numDeleted = customerDao.deleteCustomerById(updatedCustomer.getCustomerId());
+        if (numDeleted == 1) {
+            System.out.println("Successfully deleted customer");
+        } else {
+            System.out.println("Customer NOT deleted");
+        }
         // Step Four: Delete a customer with sales
+        List<Customer> customer = customerDao.getCustomersByName("Marcome", false);
+        try {
+            customerDao.deleteCustomerById(customer.get(0).getCustomerId());
+        } catch (DaoException e) {
+            System.out.println(e.getMessage());
+        }
     }
 }

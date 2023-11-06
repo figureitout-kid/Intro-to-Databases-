@@ -17,6 +17,19 @@ public class JdbcCustomerDao implements CustomerDao {
     }
 
     // Step Four: Add a new DAO method
+    @Override
+    public Customer getCustomerById(int customerId) {
+        Customer customer = null;
+        String sql = "SELECT customer_id, first_name, last_name, street_address, city, phone_number, " +
+                "email_address, email_offers " +
+                "FROM customer " +
+                "WHERE customer_id = ?;";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, customerId);
+        if (results.next()) {
+            customer = mapRowToCustomer(results);
+        }
+        return customer;
+    }
 
 
     @Override

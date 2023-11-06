@@ -32,6 +32,11 @@ public class JdbcCustomerDao implements CustomerDao {
     }
 
     @Override
+    public Customer getCustomerIdbyId(int customerId) {
+        return null;
+    }
+
+    @Override
     public List<Customer> getCustomersByName(String search, boolean useWildCard) {
         List<Customer> customers = new ArrayList<>();
         String sql = "SELECT customer_id, first_name, last_name, street_address, city, phone_number, " +
@@ -49,6 +54,7 @@ public class JdbcCustomerDao implements CustomerDao {
         }
         return customers;
     }
+
 
     private Customer mapRowToCustomer(SqlRowSet rowSet) {
         Customer customer = new Customer();

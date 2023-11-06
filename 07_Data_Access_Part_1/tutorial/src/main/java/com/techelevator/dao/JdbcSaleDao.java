@@ -20,7 +20,7 @@ public class JdbcSaleDao implements SaleDao {
         BigDecimal total = null;
 
         // Step Two: Add SQL for retrieving total sales
-        String sql = "SELECT 0 AS total;";
+        String sql = "SELECT SUM(total) AS total FROM sale;";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
 
         if (results.next()) {
@@ -46,7 +46,13 @@ public class JdbcSaleDao implements SaleDao {
     private Sale mapRowToSale(SqlRowSet rowSet) {
         Sale sale = new Sale();
         // Step Three: Copy returned values into an object
-
+        sale.setSaleId(rowSet.getInt("sale_id"));
+        sale.setTotal(rowSet.getBigDecimal("total"));
+        sale.setDelivery(rowSet.getBoolean("is_delivery"));
+        sale.setCustomerId(rowSet.getInt("customer_id"));
+        if (rowSet.wasNull()) {
+            sale.setCustomerId(null);
+        }
         return sale;
     }
 }
