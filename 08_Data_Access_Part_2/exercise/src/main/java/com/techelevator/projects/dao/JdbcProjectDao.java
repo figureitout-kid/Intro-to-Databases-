@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import com.techelevator.projects.model.Department;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -28,12 +29,16 @@ public class JdbcProjectDao implements ProjectDao {
 		Project project = null;
 		String sql = PROJECT_SELECT +
 				" WHERE p.project_id=?";
-
+		try {
 		SqlRowSet results = jdbcTemplate.queryForRowSet(sql, projectId);
 		if (results.next()) {
 			project = mapRowToProject(results);
 		}
-
+		} catch (CannotGetJdbcConnectionException e) {
+			throw new DaoException ("Unable to connect to server or database", e);
+		} catch (DataIntegrityViolationException e) {
+			throw new DaoException ("Data integrity violation", e);
+		}
 		return project;
 	}
 
@@ -41,38 +46,96 @@ public class JdbcProjectDao implements ProjectDao {
 	public List<Project> getProjects() {
 		List<Project> allProjects = new ArrayList<>();
 		String sql = PROJECT_SELECT;
-
+		try {
 		SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
 		while (results.next()) {
 			Project projectResult = mapRowToProject(results);
 			allProjects.add(projectResult);
 		}
-
+		} catch (CannotGetJdbcConnectionException e) {
+			throw new DaoException ("Unable to connect to server or database", e);
+		} catch (DataIntegrityViolationException e) {
+			throw new DaoException ("Data integrity violation", e);
+		}
 		return allProjects;
 	}
 
 	@Override
 	public Project createProject(Project newProject) {
-		throw new DaoException("createProject() not implemented");
+
+		String sql = "INSERT INTO project (name, from_date, to_date) " +
+				"VALUES (?, ?, ?) RETURNING project_id;" ;
+		try {
+			int newProjectId = jdbcTemplate.queryForObject(sql, int.class, newProject.getName(), newProject.getFromDate(), newProject.getToDate());
+
+			newProject = getProjectById(newProjectId);
+
+		} catch (CannotGetJdbcConnectionException e) {
+			throw new DaoException ("Unable to connect to server or database", e);
+		} catch (DataIntegrityViolationException e) {
+			throw new DaoException ("Data integrity violation", e);
+		}
+		return newProject;
 	}
 	
 	@Override
 	public void linkProjectEmployee(int projectId, int employeeId) {
-		throw new DaoException("linkProjectEmployee() not implemented");
+		String sql = "INSERT INTO project_employee (employee_id, project_id) VALUES (?, ?);";
+
+		try {
+			jdbcTemplate.update(sql, employeeId, projectId);
+		} catch (CannotGetJdbcConnectionException e) {
+			throw new DaoException ("Unable to connect to server or database", e);
+		} catch (DataIntegrityViolationException e) {
+			throw new DaoException ("Data integrity violation", e);
+		}
 	}
+
 
 	@Override
 	public void unlinkProjectEmployee(int projectId, int employeeId) {
-		throw new DaoException("unlinkProjectEmployee() not implemented");
+		String sql = "DELETE FROM project_employee WHERE employee_id = ? AND project_id = ?;";
+
+		try {
+			jdbcTemplate.update(sql, employeeId, projectId);
+		} catch (CannotGetJdbcConnectionException e) {
+			throw new DaoException ("Unable to connect to server or database", e);
+		} catch (DataIntegrityViolationException e) {
+			throw new DaoException ("Data integrity violation", e);
+		}
 	}
 
 	@Override
 	public Project updateProject(Project project) {
-		throw new DaoException("updateProject() not implemented");
+		String sql = "UPDATE project SET name = ? , from_date = ?, to_date = ?  " +
+				"WHERE project_id = ?;" ;
+		try {
+			int numRows = jdbcTemplate.update(sql, project.getName(), project.getFromDate(), project.getToDate(), project.getId());
+
+			if (numRows== 0) {
+				throw new DaoException("Zero rows affected, expected at least one");
+			}
+		} catch (CannotGetJdbcConnectionException e) {
+			throw new DaoException ("Unable to connect to server or database", e);
+		} catch (DataIntegrityViolationException e) {
+			throw new DaoException ("Data integrity violation", e);
+		}
+		return getProjectById(project.getId());
 	}
+
 	@Override
 	public int deleteProjectById(int projectId) {
-		throw new DaoException("deleteProjectById() not implemented");
+		String deleteProjectEmployeeSql = "DELETE FROM project_employee WHERE project_id = ?; ";
+		String deleteProjectSql = "DELETE FROM project WHERE project_id = ?;";
+
+		try {
+			jdbcTemplate.update(deleteProjectEmployeeSql, projectId);
+			return jdbcTemplate.update(deleteProjectSql, projectId);
+		} catch (CannotGetJdbcConnectionException e) {
+			throw new DaoException ("Unable to connect to server or database", e);
+		} catch (DataIntegrityViolationException e) {
+			throw new DaoException ("Data integrity violation", e);
+		}
 	}
 	
 	private Project mapRowToProject(SqlRowSet results) {

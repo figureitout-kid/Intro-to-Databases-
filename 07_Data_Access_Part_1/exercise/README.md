@@ -1,4 +1,4 @@
-`# Data access part 1 exercise
+# Data access part 1 exercise
 
 For this exercise, you'll be responsible for implementing the Data Access Objects (DAOs) for a CLI application that manages information for collections, genres, movies, and persons. The purpose of this exercise is to practice writing application code that interacts with a database.
 
