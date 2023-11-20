@@ -16,17 +16,48 @@ public class LocationService {
 
     public Location add(Location newLocation) {
         //Step Three: Add a location with POST
-        return null;
+        HttpEntity<Location> entity = makeEntity(newLocation);
+
+        Location returnedLocation = null;
+        try {
+            returnedLocation = restTemplate.postForObject(API_BASE_URL, entity, Location.class);
+        } catch (RestClientResponseException ex) {
+            BasicLogger.log(ex.getRawStatusCode() + " : " + ex.getStatusText());
+        } catch (ResourceAccessException ex) {
+            BasicLogger.log(ex.getMessage());
+        }
+        return returnedLocation;
+
     }
 
     public boolean update(Location updatedLocation) {
         //Step Four: Modify a location with PUT
-        return false;
+        HttpEntity<Location> entity = makeEntity(updatedLocation);
+
+        boolean success = false;
+        try {
+            restTemplate.put(API_BASE_URL + updatedLocation.getId(), entity);
+            success = true;
+        } catch (RestClientResponseException ex) {
+            BasicLogger.log(ex.getRawStatusCode() + " : " + ex.getStatusText());
+        } catch (ResourceAccessException ex) {
+            BasicLogger.log(ex.getMessage());
+        }
+        return success;
     }
 
     public boolean delete(int id) {
         //Step Five: Delete a location with DELETE
-        return false;
+        boolean success = false;
+        try {
+            restTemplate.delete(API_BASE_URL + id);
+            success = true;
+        } catch (RestClientResponseException ex) {
+            BasicLogger.log(ex.getRawStatusCode() + " : " + ex.getStatusText());
+        } catch (ResourceAccessException ex) {
+            BasicLogger.log(ex.getMessage());
+        }
+        return success;
     }
 
     public Location[] getAll() {
