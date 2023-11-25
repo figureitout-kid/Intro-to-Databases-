@@ -1,11 +1,13 @@
 package com.techelevator.locations.controllers;
 
 import com.techelevator.locations.dao.LocationDao;
+import com.techelevator.locations.exception.DaoException;
 import com.techelevator.locations.model.Location;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -33,9 +35,28 @@ public class LocationController {
         }
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(path = "", method = RequestMethod.POST)
-    public Location add(@RequestBody Location location) {
+    public Location add(@Valid @RequestBody Location location) {
         return locationDao.createLocation(location);
+    }
+
+
+    @RequestMapping(path = "/{id}", method = RequestMethod.PUT)
+    public Location update(@Valid @RequestBody Location location, @PathVariable int id) {
+        location.setId(id);
+        try {
+            Location updatedLocation = locationDao.updateLocation(location);
+            return updatedLocation;
+        } catch (DaoException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Location not found");
+        }
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @RequestMapping(path = "/{id}", method = RequestMethod.DELETE)
+    public void delete(@PathVariable int id) {
+        locationDao.deleteLocationById(id);
     }
 
 }
