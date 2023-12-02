@@ -3,6 +3,7 @@ package com.techelevator.auctions.services;
 import com.techelevator.auctions.model.Auction;
 import com.techelevator.util.BasicLogger;
 import org.springframework.http.*;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
@@ -29,11 +30,13 @@ public class AuctionService {
         }
         return auctions;
     }
-
     public Auction getAuction(int id) {
         Auction auction = null;
         try {
             // Add code here to send the request to the API and get the auction from the response.
+            ResponseEntity<Auction> response =
+                    restTemplate.exchange(API_BASE_URL + id, HttpMethod.GET, makeAuthEntity(), Auction.class);
+                    auction = response.getBody();
         } catch (RestClientResponseException | ResourceAccessException e) {
             BasicLogger.log(e.getMessage());
         }
